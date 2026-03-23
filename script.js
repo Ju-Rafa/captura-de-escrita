@@ -1,3 +1,6 @@
+// script.js
+
+// Variáveis principais
 let dados = [];
 let desenhando = false;
 let ultimaAmostra = null;
@@ -6,9 +9,13 @@ let paciente = {};
 let tempoInicial = null;
 let penLifts = 0;
 
+// Fundo pontilhado
+let fundoAtivo = false;
+const imagemFundo = new Image();
+imagemFundo.src = "imagem pontilhada.jpg";
 
+// Iniciar teste
 function iniciarTeste() {
-
   paciente = {
     nome: document.getElementById("nome").value,
     idade: document.getElementById("idade").value,
@@ -22,9 +29,10 @@ function iniciarTeste() {
   document.getElementById("telaCaptura").style.display = "block";
 
   iniciarCanvas();
+  redesenharCanvas(); // garante que o fundo apareça na inicialização
 }
 
-
+// Configuração do canvas
 function iniciarCanvas() {
   const canvas = document.getElementById("area");
   const ctx = canvas.getContext("2d");
@@ -51,7 +59,7 @@ function iniciarCanvas() {
   });
 }
 
-
+// Desenhar um ponto
 function desenhar(e, ctx) {
   const x = e.offsetX;
   const y = e.offsetY;
@@ -63,13 +71,10 @@ function desenhar(e, ctx) {
   ctx.fill();
 }
 
-
+// Registrar amostras
 function registrarAmostra(e) {
   const agora = performance.now();
-
-  if (!tempoInicial) {
-    tempoInicial = agora;
-  }
+  if (!tempoInicial) tempoInicial = agora;
 
   let velocidade = 0;
   let aceleracao = 0;
@@ -98,11 +103,10 @@ function registrarAmostra(e) {
 
   dados.push(amostra);
   ultimaAmostra = { x: amostra.x, y: amostra.y, t: amostra.tempo };
-
   atualizarEstatisticas();
 }
 
-
+// Atualizar estatísticas
 function atualizarEstatisticas() {
   if (dados.length === 0) return;
 
@@ -125,27 +129,15 @@ function atualizarEstatisticas() {
   document.getElementById("penLifts").innerText = penLifts;
 }
 
-
-// BAIXAR CSV
+// Baixar CSV
 function baixarCSV() {
-
-  // se não tiver dados (deu erro)
   if (dados.length === 0) {
     alert("Nenhum dado registrado!");
     return;
   }
 
-  let csv = "";
+  let csv = `Nome: ${paciente.nome}\nIdade: ${paciente.idade}\nSexo: ${paciente.sexo}\nMão dominante: ${paciente.mao}\nDiagnóstico: ${paciente.diagnostico}\nObservações: ${paciente.obs}\n\n`;
 
-  // dados do paciente
-  csv += `Nome: ${paciente.nome}\n`;
-  csv += `Idade: ${paciente.idade}\n`;
-  csv += `Sexo: ${paciente.sexo}\n`;
-  csv += `Mão dominante: ${paciente.mao}\n`;
-  csv += `Diagnóstico: ${paciente.diagnostico}\n`;
-  csv += `Observações: ${paciente.obs}\n\n`;
-
-  // CALCULA MÉDIAS CORRETAMENTE
   let somaVel = 0;
   let somaPress = 0;
 
@@ -159,56 +151,37 @@ function baixarCSV() {
   const tempoTotal = (dados[dados.length - 1].tempo - tempoInicial) / 1000;
   const totalPontos = dados.length;
 
-  // médias no csv (deu erro antes)
-  csv += `Tempo Total: ${tempoTotal.toFixed(2)} s\n`;
-  csv += `Velocidade Média: ${velMedia.toFixed(2)}\n`;
-  csv += `Pressão Média: ${pressMedia.toFixed(2)}\n`;
-  csv += `Total de Pontos: ${totalPontos}\n`;
-  csv += `Pen Lifts: ${penLifts}\n\n`;
+  csv += `Tempo Total: ${tempoTotal.toFixed(2)} s\nVelocidade Média: ${velMedia.toFixed(2)}\nPressão Média: ${pressMedia.toFixed(2)}\nTotal de Pontos: ${totalPontos}\nPen Lifts: ${penLifts}\n\n`;
 
   csv += "tempo,x,y,pressao,tiltX,tiltY,velocidade,aceleracao\n";
-
   dados.forEach(d => {
     csv += `${d.tempo},${d.x},${d.y},${d.pressao},${d.tiltX},${d.tiltY},${d.velocidade},${d.aceleracao}\n`;
   });
 
-  // corrige erros nos acentos
-  const blob = new Blob(
-    ["\uFEFF" + csv],
-    { type: "text/csv;charset=utf-8;" }
-  );
-
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
-
   const a = document.createElement("a");
   a.href = url;
   a.download = "avaliacao_paciente.csv";
   a.click();
 }
 
+// Baixar imagem
 function baixarImagem() {
-
-  const canvas = document.getElementById("area");
-
-  // caso não tenha desenho (deu erro antes, é uma proteção)
   if (dados.length === 0) {
     alert("Nenhum desenho para salvar!");
     return;
   }
 
-  // canvas para imagem PNG
+  const canvas = document.getElementById("area");
   const imagem = canvas.toDataURL("image/png");
-
-  // link para download
   const link = document.createElement("a");
   link.href = imagem;
-
-  // Nome do arquivo da imagem (teste)
   link.download = `desenho_${paciente.nome || "paciente"}.png`;
-
   link.click();
 }
 
+// Limpar tudo
 function limparTudo() {
   dados = [];
   ultimaAmostra = null;
@@ -220,9 +193,40 @@ function limparTudo() {
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  document.getElementById("tempo").innerText = "0";
-  document.getElementById("velMedia").innerText = "0";
-  document.getElementById("pressMedia").innerText = "0";
-  document.getElementById("totalPontos").innerText = "0";
-  document.getElementById("penLifts").innerText = "0";
+  atualizarEstatisticas();
+
+  // redesenha apenas o fundo se estiver ativo
+  if (fundoAtivo) {
+    ctx.drawImage(imagemFundo, 0, 0, canvas.width, canvas.height);
+  }
+}
+
+// Alternar fundo pontilhado sem apagar desenho
+function alternarFundo() {
+  const canvas = document.getElementById("area");
+  const ctx = canvas.getContext("2d");
+  fundoAtivo = !fundoAtivo;
+  redesenharCanvas();
+}
+
+// Redesenha canvas inteiro (fundo + todos os pontos)
+function redesenharCanvas() {
+  const canvas = document.getElementById("area");
+  const ctx = canvas.getContext("2d");
+
+  // Limpa
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Fundo
+  if (fundoAtivo) {
+    ctx.drawImage(imagemFundo, 0, 0, canvas.width, canvas.height);
+  }
+
+  // Redesenha todos os pontos
+  dados.forEach(ponto => {
+    ctx.beginPath();
+    ctx.arc(ponto.x, ponto.y, 2 + ponto.pressao * 2, 0, Math.PI * 2);
+    ctx.fillStyle = "black";
+    ctx.fill();
+  });
 }

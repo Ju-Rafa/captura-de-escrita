@@ -4,28 +4,24 @@
 <head>
   <meta charset="UTF-8">
   <title>Sistema de Avaliação Grafomotora</title>
-
   <style>
-    /* ===== ESTILO GERAL ===== */
     body {
       font-family: Arial, sans-serif;
-      background: #f2f4f8;
       margin: 0;
       padding: 0;
-      background-image: url(fundo.jpg);
+      background-image: url('fundo.jpg'); /* fundo estético */
       background-position: center;
       background-repeat: no-repeat;
       background-size: cover;
     }
 
-    /* ===== CAIXA PRINCIPAL ===== */
     .container {
       max-width: 900px;
       margin: 40px auto;
       background: rgba(255, 255, 255, 0.95);
       padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.15);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
       text-align: center;
     }
 
@@ -39,7 +35,9 @@
       margin-top: 15px;
     }
 
-    input, select, textarea {
+    input,
+    select,
+    textarea {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
@@ -62,12 +60,10 @@
       background: #1d4ed8;
     }
 
-    /* ===== TELA DE CAPTURA ===== */
     #telaCaptura {
       display: none;
     }
 
-    /* ===== CANVAS ===== */
     #area {
       margin: 20px auto;
       border: 2px solid #000;
@@ -79,7 +75,6 @@
       display: block;
     }
 
-    /* ===== ESTATÍSTICAS ===== */
     #estatisticas {
       margin-top: 20px;
       font-size: 16px;
@@ -96,7 +91,6 @@
       margin: 4px 0;
     }
 
-    /* Botões alinhados abaixo do canvas */
     #botoesCaptura {
       margin-top: 20px;
     }
@@ -104,48 +98,36 @@
 </head>
 
 <body>
-
-  <!-- ===== TELA 1: CADASTRO ===== -->
   <div class="container" id="telaCadastro">
     <h1>Cadastro do Paciente</h1>
-
     <label>Nome</label>
     <input type="text" id="nome">
-
     <label>Idade</label>
     <input type="number" id="idade">
-
     <label>Sexo</label>
     <select id="sexo">
       <option>Masculino</option>
       <option>Feminino</option>
       <option>Outro</option>
     </select>
-
     <label>Mão Dominante</label>
     <select id="mao">
       <option>Direita</option>
       <option>Esquerda</option>
       <option>Ambidestro</option>
     </select>
-
     <label>Diagnóstico / Suspeita Clínica</label>
     <input type="text" id="diagnostico">
-
     <label>Observações</label>
     <textarea id="obs"></textarea>
-
     <button onclick="iniciarTeste()">Iniciar Teste</button>
   </div>
 
-  <!-- ===== TELA 2: CAPTURA ===== -->
   <div class="container" id="telaCaptura">
     <h1>Captura de Escrita</h1>
     <p>Escreva na área abaixo:</p>
-
     <canvas id="area"></canvas>
 
-    <!-- ===== ESTATÍSTICAS ===== -->
     <div id="estatisticas">
       <p><b>Tempo de Escrita:</b> <span id="tempo">0</span> s</p>
       <p><b>Velocidade Média:</b> <span id="velMedia">0</span></p>
@@ -154,222 +136,15 @@
       <p><b>Pen Lifts:</b> <span id="penLifts">0</span></p>
     </div>
 
-    <!-- ===== BOTÕES ===== -->
     <div id="botoesCaptura">
       <button onclick="limparTudo()">Limpar Escrita</button>
       <button onclick="baixarCSV()">Baixar CSV</button>
       <button onclick="baixarImagem()">Baixar Imagem</button>
+      <button onclick="alternarFundo()">Alternar Fundo Pontilhado</button>
     </div>
   </div>
 
-  <script>
-    // ===== VARIÁVEIS PRINCIPAIS =====
-    let dados = [];
-    let desenhando = false;
-    let ultimaAmostra = null;
-    let ultimaVelocidade = 0;
-    let paciente = {};
-    let tempoInicial = null;
-    let penLifts = 0;
-
-    // ===== INICIAR TESTE =====
-    function iniciarTeste() {
-      paciente = {
-        nome: document.getElementById("nome").value,
-        idade: document.getElementById("idade").value,
-        sexo: document.getElementById("sexo").value,
-        mao: document.getElementById("mao").value,
-        diagnostico: document.getElementById("diagnostico").value,
-        obs: document.getElementById("obs").value
-      };
-
-      document.getElementById("telaCadastro").style.display = "none";
-      document.getElementById("telaCaptura").style.display = "block";
-
-      iniciarCanvas();
-    }
-
-    // ===== CONFIGURA CANVAS =====
-    function iniciarCanvas() {
-      const canvas = document.getElementById("area");
-      const ctx = canvas.getContext("2d");
-
-      canvas.width = 800;
-      canvas.height = 500;
-
-      canvas.addEventListener("pointerdown", (e) => {
-        desenhando = true;
-        registrarAmostra(e);
-      });
-
-      canvas.addEventListener("pointermove", (e) => {
-        if (!desenhando) return;
-        desenhar(e, ctx);
-        registrarAmostra(e);
-      });
-
-      canvas.addEventListener("pointerup", () => {
-        desenhando = false;
-        ultimaAmostra = null;
-        ultimaVelocidade = 0;
-        penLifts++;
-      });
-    }
-
-    // ===== DESENHAR =====
-    function desenhar(e, ctx) {
-      const x = e.offsetX;
-      const y = e.offsetY;
-      const pressure = e.pressure || 0;
-
-      ctx.fillStyle = "black";
-      ctx.beginPath();
-      ctx.arc(x, y, 2 + pressure * 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // ===== REGISTRAR AMOSTRA =====
-    function registrarAmostra(e) {
-      const agora = performance.now();
-
-      if (!tempoInicial) tempoInicial = agora;
-
-      let velocidade = 0;
-      let aceleracao = 0;
-
-      if (ultimaAmostra) {
-        const dx = e.offsetX - ultimaAmostra.x;
-        const dy = e.offsetY - ultimaAmostra.y;
-        const dt = (agora - ultimaAmostra.t) / 1000;
-
-        velocidade = Math.sqrt(dx * dx + dy * dy) / dt;
-        aceleracao = dt > 0 ? (velocidade - ultimaVelocidade) / dt : 0;
-      }
-
-      ultimaVelocidade = velocidade;
-
-      const amostra = {
-        tempo: agora,
-        x: e.offsetX,
-        y: e.offsetY,
-        pressao: e.pressure || 0,
-        tiltX: e.tiltX || 0,
-        tiltY: e.tiltY || 0,
-        velocidade: velocidade,
-        aceleracao: aceleracao
-      };
-
-      dados.push(amostra);
-      ultimaAmostra = { x: amostra.x, y: amostra.y, t: amostra.tempo };
-
-      atualizarEstatisticas();
-    }
-
-    // ===== ATUALIZAR ESTATÍSTICAS =====
-    function atualizarEstatisticas() {
-      if (dados.length === 0) return;
-
-      let somaVel = 0;
-      let somaPress = 0;
-
-      dados.forEach(d => {
-        somaVel += d.velocidade;
-        somaPress += d.pressao;
-      });
-
-      const velMedia = somaVel / dados.length;
-      const pressMedia = somaPress / dados.length;
-      const tempoTotal = (dados[dados.length - 1].tempo - tempoInicial) / 1000;
-
-      document.getElementById("tempo").innerText = tempoTotal.toFixed(2);
-      document.getElementById("velMedia").innerText = velMedia.toFixed(2);
-      document.getElementById("pressMedia").innerText = pressMedia.toFixed(2);
-      document.getElementById("totalPontos").innerText = dados.length;
-      document.getElementById("penLifts").innerText = penLifts;
-    }
-
-    // ===== BAIXAR CSV =====
-    function baixarCSV() {
-      if (dados.length === 0) {
-        alert("Nenhum dado registrado!");
-        return;
-      }
-
-      let csv = "";
-      csv += `Nome: ${paciente.nome}\n`;
-      csv += `Idade: ${paciente.idade}\n`;
-      csv += `Sexo: ${paciente.sexo}\n`;
-      csv += `Mão dominante: ${paciente.mao}\n`;
-      csv += `Diagnóstico: ${paciente.diagnostico}\n`;
-      csv += `Observações: ${paciente.obs}\n\n`;
-
-      let somaVel = 0;
-      let somaPress = 0;
-
-      dados.forEach(d => {
-        somaVel += d.velocidade;
-        somaPress += d.pressao;
-      });
-
-      const velMedia = somaVel / dados.length;
-      const pressMedia = somaPress / dados.length;
-      const tempoTotal = (dados[dados.length - 1].tempo - tempoInicial) / 1000;
-      const totalPontos = dados.length;
-
-      csv += `Tempo Total: ${tempoTotal.toFixed(2)} s\n`;
-      csv += `Velocidade Média: ${velMedia.toFixed(2)}\n`;
-      csv += `Pressão Média: ${pressMedia.toFixed(2)}\n`;
-      csv += `Total de Pontos: ${totalPontos}\n`;
-      csv += `Pen Lifts: ${penLifts}\n\n`;
-
-      csv += "tempo,x,y,pressao,tiltX,tiltY,velocidade,aceleracao\n";
-
-      dados.forEach(d => {
-        csv += `${d.tempo},${d.x},${d.y},${d.pressao},${d.tiltX},${d.tiltY},${d.velocidade},${d.aceleracao}\n`;
-      });
-
-      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "avaliacao_paciente.csv";
-      a.click();
-    }
-
-    // ===== BAIXAR IMAGEM =====
-    function baixarImagem() {
-      if (dados.length === 0) {
-        alert("Nenhum desenho para salvar!");
-        return;
-      }
-
-      const canvas = document.getElementById("area");
-      const imagem = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.href = imagem;
-      link.download = `desenho_${paciente.nome || "paciente"}.png`;
-      link.click();
-    }
-
-    // ===== LIMPAR TUDO =====
-    function limparTudo() {
-      dados = [];
-      ultimaAmostra = null;
-      ultimaVelocidade = 0;
-      tempoInicial = null;
-      penLifts = 0;
-
-      const canvas = document.getElementById("area");
-      const ctx = canvas.getContext("2d");
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      document.getElementById("tempo").innerText = "0";
-      document.getElementById("velMedia").innerText = "0";
-      document.getElementById("pressMedia").innerText = "0";
-      document.getElementById("totalPontos").innerText = "0";
-      document.getElementById("penLifts").innerText = "0";
-    }
-  </script>
-
+  <script src="script.js"></script>
 </body>
+
 </html>
