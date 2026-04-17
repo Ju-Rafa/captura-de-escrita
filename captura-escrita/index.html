@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Sistema de Avaliação Grafomotora</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-image: url('fundo.jpg');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: rgba(255,255,255,0.95);
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      font-size: 15px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    canvas {
+      margin-top: 20px;
+      border: 2px solid black;
+      width: 800px;
+      height: 500px;
+      background: white;
+      border-radius: 8px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      touch-action: none;
+    }
+
+    .estatisticas {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      text-align: left;
+      gap: 10px;
+    }
+
+    #telaCaptura1,
+    #telaCaptura2 {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- CADASTRO -->
+<div class="container" id="telaCadastro">
+  <h2>Cadastro</h2>
+
+  <input id="nome" placeholder="Nome">
+  <input id="idade" type="number" placeholder="Idade">
+
+  <select id="sexo">
+    <option>Masculino</option>
+    <option>Feminino</option>
+    <option>Outro</option>
+  </select>
+
+  <select id="mao">
+    <option>Direita</option>
+    <option>Esquerda</option>
+    <option>Ambidestro</option>
+  </select>
+
+  <input id="diagnostico" placeholder="Diagnóstico">
+  <textarea id="obs" placeholder="Observações"></textarea>
+
+  <button onclick="iniciarTeste()">Iniciar Teste</button>
+</div>
+
+<!-- TESTE 1 -->
+<div class="container" id="telaCaptura1">
+  <h2>Teste 1</h2>
+
+  <canvas id="area1"></canvas>
+
+  <div class="estatisticas">
+    <p>Tempo: <span id="tempo1">0</span></p>
+    <p>Vel Média: <span id="velMedia1">0</span></p>
+    <p>Pressão Média: <span id="pressMedia1">0</span></p>
+    <p>Total de Pontos: <span id="totalPontos1">0</span></p>
+    <p>Pen Lifts: <span id="penLifts1">0</span></p>
+  </div>
+
+  <button onclick="limparTudo()">Limpar</button>
+  <button onclick="proximoTeste()">Próximo Teste</button>
+</div>
+
+<!-- TESTE 2 -->
+<div class="container" id="telaCaptura2">
+  <h2>Teste 2</h2>
+
+  <canvas id="area2"></canvas>
+
+  <div class="estatisticas">
+    <p>Tempo: <span id="tempo2">0</span></p>
+    <p>Vel Média: <span id="velMedia2">0</span></p>
+    <p>Pressão Média: <span id="pressMedia2">0</span></p>
+    <p>Total de Pontos: <span id="totalPontos2">0</span></p>
+    <p>Pen Lifts: <span id="penLifts2">0</span></p>
+  </div>
+
+  <button onclick="limparTudo()">Limpar</button>
+  <button onclick="baixarCSV()">Baixar CSV</button>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
