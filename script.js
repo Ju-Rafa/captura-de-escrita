@@ -1,15 +1,12 @@
 let dadosTeste1 = [];
 let dadosTeste2 = [];
-
 let desenhando = false;
 let ultimaAmostra = null;
 let tempoInicial = null;
 let penLifts = 0;
-
 let paciente = {};
 let testeAtual = 1;
 
-// =====================
 function iniciarTeste() {
   paciente = {
     nome: document.getElementById("nome").value,
@@ -28,7 +25,6 @@ function iniciarTeste() {
   iniciarCanvas();
 }
 
-// =====================
 function proximoTeste() {
   document.getElementById("telaCaptura1").style.display = "none";
   document.getElementById("telaCaptura2").style.display = "block";
@@ -38,7 +34,6 @@ function proximoTeste() {
   iniciarCanvas();
 }
 
-// =====================
 function getCanvas() {
   return document.getElementById(testeAtual === 1 ? "area1" : "area2");
 }
@@ -47,7 +42,6 @@ function getDados() {
   return testeAtual === 1 ? dadosTeste1 : dadosTeste2;
 }
 
-// =====================
 function iniciarCanvas() {
   const canvas = getCanvas();
   const ctx = canvas.getContext("2d");
@@ -84,14 +78,12 @@ function iniciarCanvas() {
   };
 }
 
-// =====================
 function desenhar(e, ctx) {
   ctx.beginPath();
   ctx.arc(e.offsetX, e.offsetY, 2, 0, Math.PI * 2);
   ctx.fill();
 }
 
-// =====================
 function registrar(e) {
   const dados = getDados();
   const agora = performance.now();
@@ -121,7 +113,6 @@ function registrar(e) {
   atualizar();
 }
 
-// =====================
 function atualizar() {
   const dados = getDados();
   if (!dados.length) return;
@@ -145,7 +136,6 @@ function atualizar() {
   document.getElementById("penLifts" + testeAtual).innerText = penLifts;
 }
 
-// =====================
 function limparTudo() {
   if (testeAtual === 1) dadosTeste1 = [];
   else dadosTeste2 = [];
@@ -154,14 +144,12 @@ function limparTudo() {
   iniciarCanvas();
 }
 
-// =====================
 function resetarEstado() {
   ultimaAmostra = null;
   tempoInicial = null;
   penLifts = 0;
 }
 
-// =====================
 function baixarCSV() {
   let csv = `Nome: ${paciente.nome}
 Idade: ${paciente.idade}
