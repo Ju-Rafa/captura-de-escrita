@@ -4,51 +4,37 @@
 <head>
   <meta charset="UTF-8">
   <title>Sistema de Avaliação Grafomotora</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
-      background-image: url('fundo.jpg'); /* fundo estético */
-      background-position: center;
-      background-repeat: no-repeat;
+      background-image: url('fundo.jpg');
       background-size: cover;
+      background-position: center;
     }
 
     .container {
       max-width: 900px;
       margin: 40px auto;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255,255,255,0.95);
       padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
       text-align: center;
     }
 
-    h1 {
-      color: #333;
-    }
-
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 15px;
-    }
-
-    input,
-    select,
-    textarea {
+    input, select, textarea {
       width: 100%;
       padding: 10px;
-      margin-top: 5px;
+      margin-top: 10px;
       border-radius: 6px;
       border: 1px solid #ccc;
     }
 
     button {
       margin-top: 15px;
-      padding: 12px 20px;
-      font-size: 16px;
+      padding: 10px 15px;
+      font-size: 15px;
       border: none;
       border-radius: 8px;
       background: #2563eb;
@@ -60,91 +46,98 @@
       background: #1d4ed8;
     }
 
-    #telaCaptura {
-      display: none;
-    }
-
-    #area {
-      margin: 20px auto;
-      border: 2px solid #000;
-      touch-action: none;
+    canvas {
+      margin-top: 20px;
+      border: 2px solid black;
       width: 800px;
       height: 500px;
-      background: #fff;
+      background: white;
       border-radius: 8px;
       display: block;
+      margin-left: auto;
+      margin-right: auto;
+      touch-action: none;
     }
 
-    #estatisticas {
+    .estatisticas {
       margin-top: 20px;
-      font-size: 16px;
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      grid-template-columns: 1fr 1fr;
       text-align: left;
-      background: #f9fafb;
-      padding: 15px;
-      border-radius: 8px;
+      gap: 10px;
     }
 
-    #estatisticas p {
-      margin: 4px 0;
-    }
-
-    #botoesCaptura {
-      margin-top: 20px;
+    #telaCaptura1,
+    #telaCaptura2 {
+      display: none;
     }
   </style>
 </head>
 
 <body>
-  <div class="container" id="telaCadastro">
-    <h1>Cadastro do Paciente</h1>
-    <label>Nome</label>
-    <input type="text" id="nome">
-    <label>Idade</label>
-    <input type="number" id="idade">
-    <label>Sexo</label>
-    <select id="sexo">
-      <option>Masculino</option>
-      <option>Feminino</option>
-      <option>Outro</option>
-    </select>
-    <label>Mão Dominante</label>
-    <select id="mao">
-      <option>Direita</option>
-      <option>Esquerda</option>
-      <option>Ambidestro</option>
-    </select>
-    <label>Diagnóstico / Suspeita Clínica</label>
-    <input type="text" id="diagnostico">
-    <label>Observações</label>
-    <textarea id="obs"></textarea>
-    <button onclick="iniciarTeste()">Iniciar Teste</button>
+
+<!-- CADASTRO -->
+<div class="container" id="telaCadastro">
+  <h2>Cadastro</h2>
+
+  <input id="nome" placeholder="Nome">
+  <input id="idade" type="number" placeholder="Idade">
+
+  <select id="sexo">
+    <option>Masculino</option>
+    <option>Feminino</option>
+    <option>Outro</option>
+  </select>
+
+  <select id="mao">
+    <option>Direita</option>
+    <option>Esquerda</option>
+    <option>Ambidestro</option>
+  </select>
+
+  <input id="diagnostico" placeholder="Diagnóstico">
+  <textarea id="obs" placeholder="Observações"></textarea>
+
+  <button onclick="iniciarTeste()">Iniciar Teste</button>
+</div>
+
+<!-- TESTE 1 -->
+<div class="container" id="telaCaptura1">
+  <h2>Teste 1</h2>
+
+  <canvas id="area1"></canvas>
+
+  <div class="estatisticas">
+    <p>Tempo: <span id="tempo1">0</span></p>
+    <p>Vel Média: <span id="velMedia1">0</span></p>
+    <p>Pressão Média: <span id="pressMedia1">0</span></p>
+    <p>Total de Pontos: <span id="totalPontos1">0</span></p>
+    <p>Pen Lifts: <span id="penLifts1">0</span></p>
   </div>
 
-  <div class="container" id="telaCaptura">
-    <h1>Captura de Escrita</h1>
-    <p>Escreva na área abaixo:</p>
-    <canvas id="area"></canvas>
+  <button onclick="limparTudo()">Limpar</button>
+  <button onclick="proximoTeste()">Próximo Teste</button>
+</div>
 
-    <div id="estatisticas">
-      <p><b>Tempo de Escrita:</b> <span id="tempo">0</span> s</p>
-      <p><b>Velocidade Média:</b> <span id="velMedia">0</span></p>
-      <p><b>Pressão Média:</b> <span id="pressMedia">0</span></p>
-      <p><b>Total de Pontos:</b> <span id="totalPontos">0</span></p>
-      <p><b>Pen Lifts:</b> <span id="penLifts">0</span></p>
-    </div>
+<!-- TESTE 2 -->
+<div class="container" id="telaCaptura2">
+  <h2>Teste 2</h2>
 
-    <div id="botoesCaptura">
-      <button onclick="limparTudo()">Limpar Escrita</button>
-      <button onclick="baixarCSV()">Baixar CSV</button>
-      <button onclick="baixarImagem()">Baixar Imagem</button>
-      <button onclick="alternarFundo()">Alternar Fundo Pontilhado</button>
-    </div>
+  <canvas id="area2"></canvas>
+
+  <div class="estatisticas">
+    <p>Tempo: <span id="tempo2">0</span></p>
+    <p>Vel Média: <span id="velMedia2">0</span></p>
+    <p>Pressão Média: <span id="pressMedia2">0</span></p>
+    <p>Total de Pontos: <span id="totalPontos2">0</span></p>
+    <p>Pen Lifts: <span id="penLifts2">0</span></p>
   </div>
 
-  <script src="script.js"></script>
+  <button onclick="limparTudo()">Limpar</button>
+  <button onclick="baixarCSV()">Baixar CSV</button>
+</div>
+
+<script src="script.js"></script>
+
 </body>
-
 </html>
